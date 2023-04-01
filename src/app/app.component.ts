@@ -51,6 +51,28 @@ export class AppComponent implements OnInit {
     this.getExpenses();
   }
 
+  get getPaid(): number {
+    let countPay = 0;
+    this.dataLocal.forEach((element: any) => {
+      if (element.state) {
+        countPay++;
+      }
+    });
+
+    return countPay;
+  }
+
+  get getNoPaid(): number {
+    let countPay = 0;
+    this.dataLocal.forEach((element: any) => {
+      if (!element.state) {
+        countPay++;
+      }
+    });
+
+    return countPay;
+  }
+
   public createExpense() {
     if (this.form.invalid) {
       return;
