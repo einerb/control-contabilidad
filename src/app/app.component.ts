@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import Swal from 'sweetalert2';
+import * as moment from 'moment';
 
 export interface Expense {
   id: string;
@@ -41,6 +42,8 @@ export class AppComponent implements OnInit {
   ];
   public dataLocal: any = [];
   public form!: FormGroup;
+  public selectedMonth = moment(new Date(), 'DD/MM/YYYY').month() + 1;
+  filteredData: any;
 
   constructor(private fb: FormBuilder) {
     this.createForm();
@@ -48,7 +51,6 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.getTotal();
-    this.getExpenses();
   }
 
   get getPaid(): number {
@@ -109,15 +111,19 @@ export class AppComponent implements OnInit {
     this.closeModalCreate.nativeElement.click();
   }
 
-  // Terminar mañana
   public filterExpenses() {
-    this.dataLocal.filter(
-      (element: any) => new Date(element.createdAt).getMonth() === 2
-    );
+    let expenses = localStorage.getItem('dataExpenses');
 
-    console.log(new Date('26-03-2023').getMonth().toLocaleString());
+    if (expenses) {
+      const allExpenses = JSON.parse(expenses);
 
-    console.log(this.dataLocal);
+      const filteredExpenses = allExpenses.filter((expense: Expense) => {
+        const dateRecord = moment(expense.createdAt, 'DD/MM/YYYY').month() + 1;
+        return dateRecord === +this.selectedMonth;
+      });
+      const newDataLocal = filteredExpenses;
+      this.dataLocal = newDataLocal;
+    }
   }
 
   public formatMoney(value: number) {
@@ -155,7 +161,6 @@ export class AppComponent implements OnInit {
           'success'
         );
 
-        this.getExpenses();
         this.getTotal();
       }
     });
@@ -184,7 +189,6 @@ export class AppComponent implements OnInit {
       }
     }
 
-    this.getExpenses();
     this.getTotal();
   }
 
@@ -200,7 +204,15 @@ export class AppComponent implements OnInit {
     let expenses = localStorage.getItem('dataExpenses');
 
     if (expenses) {
-      this.dataLocal = JSON.parse(expenses);
+      const allExpenses = JSON.parse(expenses);
+
+      const todayExpenses = allExpenses.filter((expense: Expense) => {
+        const createdAt = moment(expense.createdAt, 'DD/MM/YYYY').month() + 1;
+
+        return createdAt === moment(new Date(), 'DD/MM/YYYY').month() + 1;
+      });
+
+      this.dataLocal = todayExpenses;
     }
   }
 

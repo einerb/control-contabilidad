@@ -94,9 +94,9 @@
   </div>
   <div class="row mt-4">
     <div class="col-4">
-      <select class="form-select" (change)="filterExpenses()">
+      <select [(ngModel)]="selectedMonth" (change)="filterExpenses()" class="form-select">
         <option value="">Seleccione un mes para filtrar</option>
-        <option [value]="month" *ngFor="let month of months">
+        <option  *ngFor="let month of months; let i = index" [value]="i + 1">
           {{ month }}
         </option>
       </select>
@@ -186,9 +186,9 @@
   <div class="row">
     <div class="d-flex flex-row-reverse bd-highlight">
       <div class="alert alert-info text-end text-muted col-xs-12 col-md-6">
-        <i class="bi bi-info-fill"></i> Total gastos: <b>{{ dataLocal.length }}</b> registros 
-        - Total Por Pagar: <b>{{ getNoPaid }}</b>
-        - Total pagados: <b>{{ getPaid }}</b>
+        <i class="bi bi-info-fill"></i> Total gastos:
+        <b>{{ dataLocal.length }}</b> registros - Total Por Pagar:
+        <b>{{ getNoPaid }}</b> - Total pagados: <b>{{ getPaid }}</b>
       </div>
     </div>
   </div>
