@@ -23,8 +23,6 @@ export class AppComponent implements OnInit {
   public year = new Date().getFullYear();
   public month = new Date().toLocaleString('default', { month: 'long' });
   public earnings: any = '0';
-  public expenses = 0;
-  public balance = 0;
   public expenseId = '';
   public months: string[] = [
     'Enero',
@@ -43,14 +41,20 @@ export class AppComponent implements OnInit {
   public dataLocal: any = [];
   public form!: FormGroup;
   public selectedMonth = moment(new Date(), 'DD/MM/YYYY').month() + 1;
-  filteredData: any;
+
+  /* Pagination */
+  public MAX_ITEMS_PER_PAGE = 10;
+  public page: number = 1;
+  public totalPages = 0;
+  public numberPages: any;
+  public isVisiblePagination = true;
 
   constructor(private fb: FormBuilder) {
     this.createForm();
   }
 
   ngOnInit(): void {
-    this.getTotal();
+    this.getExpenses(this.page);
   }
 
   get getPaid(): number {
@@ -73,6 +77,42 @@ export class AppComponent implements OnInit {
     });
 
     return countPay;
+  }
+
+  get getExpense(): number {
+    let expense = 0;
+    let expenses = localStorage.getItem('dataExpenses');
+
+    if (expenses) {
+      const allExpenses = JSON.parse(expenses);
+      allExpenses.forEach((element: any) => {
+        if (!element.state) {
+          expense += element.amount;
+        }
+      });
+    }
+
+    return expense;
+  }
+
+  get getBalance(): number {
+    let balance = 0;
+    let expenses = localStorage.getItem('dataExpenses');
+
+    if (expenses) {
+      balance = Math.abs(this.getEarning) - Math.abs(this.getExpense);
+    }
+
+    return balance;
+  }
+
+  get getEarning(): number {
+    let amountLocal = localStorage.getItem('amount');
+    if (amountLocal) {
+      this.earnings = parseInt(amountLocal);
+    }
+
+    return this.earnings;
   }
 
   public createExpense() {
@@ -104,8 +144,7 @@ export class AppComponent implements OnInit {
     arrayLocal.push(data);
     localStorage.setItem('dataExpenses', JSON.stringify(arrayLocal));
 
-    this.getTotal();
-    this.getExpenses();
+    this.getExpenses(this.page);
 
     this.form.reset();
     this.closeModalCreate.nativeElement.click();
@@ -122,12 +161,62 @@ export class AppComponent implements OnInit {
         return dateRecord === +this.selectedMonth;
       });
       const newDataLocal = filteredExpenses;
-      this.dataLocal = newDataLocal;
+
+      this.page = 1;
+
+      const startIndex = (this.page - 1) * this.MAX_ITEMS_PER_PAGE;
+      const endIndex = startIndex + this.MAX_ITEMS_PER_PAGE;
+
+      this.dataLocal = newDataLocal.slice(startIndex, endIndex);
+
+      this.isVisiblePagination =
+        newDataLocal.length > this.MAX_ITEMS_PER_PAGE ? true : false;
     }
   }
 
   public formatMoney(value: number) {
     return new Intl.NumberFormat('es-CL').format(value);
+  }
+
+  public getExpenses(page: number) {
+    let expenses = localStorage.getItem('dataExpenses');
+
+    if (expenses) {
+      const allExpenses = JSON.parse(expenses);
+
+      const todayExpenses = allExpenses.filter((expense: Expense) => {
+        const createdAt = moment(expense.createdAt, 'DD/MM/YYYY').month() + 1;
+
+        return createdAt === moment(new Date(), 'DD/MM/YYYY').month() + 1;
+      });
+
+      const startIndex = (page - 1) * this.MAX_ITEMS_PER_PAGE;
+      const endIndex = startIndex + this.MAX_ITEMS_PER_PAGE;
+
+      this.dataLocal = todayExpenses.slice(startIndex, endIndex);
+      this.totalPages = Math.ceil(
+        todayExpenses.length / this.MAX_ITEMS_PER_PAGE
+      );
+
+      this.numberPages = Array.from(
+        { length: this.totalPages },
+        (_, i) => i + 1
+      );
+    }
+  }
+
+  public nextPage() {
+    if (this.page < this.totalPages) {
+      this.page++;
+      this.getExpenses(this.page);
+    }
+  }
+
+  public previousPage() {
+    if (this.page > 1) {
+      this.page--;
+      this.getExpenses(this.page);
+    }
   }
 
   public remove(expense: number) {
@@ -161,15 +250,17 @@ export class AppComponent implements OnInit {
           'success'
         );
 
-        this.getTotal();
+        if (this.dataLocal.length === 1) {
+          this.getExpenses(this.page--);
+        }
+
+        this.getExpenses(this.page);
       }
     });
   }
 
   public save(amount: any) {
     localStorage.setItem('amount', JSON.stringify(+amount.value));
-
-    this.getTotal();
 
     this.closeModalEdit.nativeElement.click();
 
@@ -186,10 +277,10 @@ export class AppComponent implements OnInit {
         itemToUpdate.state = true;
 
         localStorage.setItem('dataExpenses', JSON.stringify(items));
+
+        this.getExpenses(this.page);
       }
     }
-
-    this.getTotal();
   }
 
   private createForm() {
@@ -198,22 +289,6 @@ export class AppComponent implements OnInit {
       description: ['', [Validators.required]],
       amount: ['', [Validators.required]],
     });
-  }
-
-  private getExpenses() {
-    let expenses = localStorage.getItem('dataExpenses');
-
-    if (expenses) {
-      const allExpenses = JSON.parse(expenses);
-
-      const todayExpenses = allExpenses.filter((expense: Expense) => {
-        const createdAt = moment(expense.createdAt, 'DD/MM/YYYY').month() + 1;
-
-        return createdAt === moment(new Date(), 'DD/MM/YYYY').month() + 1;
-      });
-
-      this.dataLocal = todayExpenses;
-    }
   }
 
   private getExpenseId() {
@@ -228,23 +303,5 @@ export class AppComponent implements OnInit {
     return consecutive < 1000 && consecutive < 10
       ? 'GST-000' + consecutive
       : 'GST-00' + consecutive;
-  }
-
-  private getTotal() {
-    this.expenses = 0;
-    this.getExpenses();
-
-    this.dataLocal.forEach((element: any) => {
-      if (!element.state) {
-        this.expenses += element.amount;
-      }
-    });
-
-    let amountLocal = localStorage.getItem('amount');
-    if (amountLocal) {
-      this.earnings = parseInt(amountLocal);
-    }
-
-    this.balance = Math.abs(this.earnings) - Math.abs(this.expenses);
   }
 }

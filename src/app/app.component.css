@@ -23,7 +23,7 @@
     resize: none;
   }
 
-  .options {
+  .options, .page-link{
     cursor: pointer;
   }
 

@@ -22,7 +22,7 @@
           </h5>
           <p class="card-text fs-2 text-success text-center">
             <i class="bi bi-arrow-up fw-bold"></i>
-            $ {{ this.formatMoney(earnings) }}
+            $ {{ this.formatMoney(getEarning) }}
           </p>
         </div>
       </div>
@@ -36,7 +36,7 @@
             $
             {{
               dataLocal.length > 0
-                ? this.formatMoney(expenses)
+                ? this.formatMoney(getExpense)
                 : this.formatMoney(0)
             }}
           </p>
@@ -49,24 +49,24 @@
       <div class="card-body">
         <h5 class="card-title">Balance</h5>
         <p
-          [ngClass]="balance > 0 ? 'text-success' : 'text-danger'"
+          [ngClass]="getBalance > 0 ? 'text-success' : 'text-danger'"
           class="card-text fs-2 text-center"
         >
           <i
             [ngClass]="
-              balance > 0
+              getBalance > 0
                 ? 'bi bi-arrow-up fw-bold'
                 : 'bi bi-arrow-down fw-bold'
             "
           ></i>
-          $ {{ this.formatMoney(balance) }}
+          $ {{ this.formatMoney(getBalance) }}
         </p>
 
         <!-- Inicio Mensajes -->
         <div
           class="alert alert-danger text-center"
           role="alert"
-          *ngIf="balance <= 0"
+          *ngIf="getBalance <= 0"
         >
           Debes gastar menos, porque estás gastando más de lo que ganas y se
           está rompiendo el equilibrio <i class="bi bi-emoji-dizzy fw-bold"></i>
@@ -74,7 +74,7 @@
         <div
           class="alert alert-warning text-center"
           role="alert"
-          *ngIf="balance > 0 && balance <= 100000"
+          *ngIf="getBalance > 0 && getBalance <= 100000"
         >
           El equilibrio se está viendo un poco amenazado
           <i class="bi bi-emoji-expressionless fw-bold"></i>
@@ -82,7 +82,7 @@
         <div
           class="alert alert-success text-center"
           role="alert"
-          *ngIf="balance > 100000"
+          *ngIf="getBalance > 100000"
         >
           Se mantiene el equilibro de las finanzas actualmente. Todavía tenemos
           oportunidad de darnos lujitos
@@ -94,9 +94,13 @@
   </div>
   <div class="row mt-4">
     <div class="col-4">
-      <select [(ngModel)]="selectedMonth" (change)="filterExpenses()" class="form-select">
+      <select
+        [(ngModel)]="selectedMonth"
+        (change)="filterExpenses()"
+        class="form-select"
+      >
         <option value="">Seleccione un mes para filtrar</option>
-        <option  *ngFor="let month of months; let i = index" [value]="i + 1">
+        <option *ngFor="let month of months; let i = index" [value]="i + 1">
           {{ month }}
         </option>
       </select>
@@ -181,6 +185,36 @@
           </tr>
         </tbody>
       </table>
+      <nav
+        aria-label="Page navigation example"
+        *ngIf="totalPages > 1 && isVisiblePagination"
+      >
+        <ul class="pagination justify-content-end">
+          <li class="page-item" [ngClass]="{ disabled: page === 1 }">
+            <a class="page-link" aria-label="Previous" (click)="previousPage()">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          <li
+            class="page-item"
+            *ngFor="let numberPage of numberPages"
+            [ngClass]="{ active: numberPage === page }"
+            (click)="page = numberPage"
+          >
+            <a class="page-link" (click)="getExpenses(numberPage)">{{
+              numberPage
+            }}</a>
+          </li>
+          <li
+            class="page-item"
+            [ngClass]="{ disabled: this.page === this.totalPages }"
+          >
+            <a class="page-link" aria-label="Next" (click)="nextPage()">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
     </div>
   </div>
   <div class="row">
