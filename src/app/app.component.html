@@ -187,7 +187,7 @@
       </table>
       <nav
         aria-label="Page navigation example"
-        *ngIf="totalPages > 1 && isVisiblePagination"
+        *ngIf="totalPages > 1"
       >
         <ul class="pagination justify-content-end">
           <li class="page-item" [ngClass]="{ disabled: page === 1 }">
