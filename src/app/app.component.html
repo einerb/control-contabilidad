@@ -185,10 +185,7 @@
           </tr>
         </tbody>
       </table>
-      <nav
-        aria-label="Page navigation example"
-        *ngIf="totalPages > 1"
-      >
+      <nav aria-label="Page navigation example">
         <ul class="pagination justify-content-end">
           <li class="page-item" [ngClass]="{ disabled: page === 1 }">
             <a class="page-link" aria-label="Previous" (click)="previousPage()">
