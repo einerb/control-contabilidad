@@ -43,10 +43,10 @@ export class AppComponent implements OnInit {
   public selectedMonth = moment(new Date(), 'DD/MM/YYYY').month() + 1;
 
   /* Pagination */
-  public MAX_ITEMS_PER_PAGE = 5;
+  public MAX_ITEMS_PER_PAGE = 100;
   public page: number = 1;
   public totalPages = 0;
-  public numberPages: any;
+  public numberPages: any = 0;
   public isVisiblePagination = true;
 
   constructor(private fb: FormBuilder) {
