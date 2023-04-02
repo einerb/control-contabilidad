@@ -43,7 +43,7 @@ export class AppComponent implements OnInit {
   public selectedMonth = moment(new Date(), 'DD/MM/YYYY').month() + 1;
 
   /* Pagination */
-  public MAX_ITEMS_PER_PAGE = 10;
+  public MAX_ITEMS_PER_PAGE = 5;
   public page: number = 1;
   public totalPages = 0;
   public numberPages: any;
